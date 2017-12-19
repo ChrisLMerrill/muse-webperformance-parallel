@@ -1,0 +1,41 @@
+apply plugin: 'java-library'
+apply plugin: 'maven'
+
+version = 0.1
+group = 'com.webperformance.muse'
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+dependencies {
+    compile 'org.musetest:muse-core:0.12'
+
+    testImplementation 'junit:junit:4.12'
+}
+
+// jar the sources
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+// jar the javadocs
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// produce the sources and javadoc artifacts
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+// declare which packages Muse should scan for extensions
+jar {
+    manifest {
+        attributes 'muse-package': 'com.webperformance.muse.parallel'
+    }
+}
