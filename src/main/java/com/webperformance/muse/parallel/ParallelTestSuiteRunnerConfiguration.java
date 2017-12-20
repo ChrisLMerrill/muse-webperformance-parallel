@@ -37,11 +37,11 @@ public class ParallelTestSuiteRunnerConfiguration extends SuiteRunnerConfigurati
 
 	public final static String MAX_CONCURRENCY_PARAM_NAME = "max-concurrency";
 
-	public static class ParallelTestSuiteRunnerResourceType extends ResourceType
+	public static class ParallelTestSuiteRunnerResourceType extends ResourceSubtype
 		{
 		public ParallelTestSuiteRunnerResourceType()
 			{
-			super(TYPE_ID, "Parallel Test Suite Runner", ParallelTestSuiteRunnerConfiguration.class);
+			super(TYPE_ID, "Parallel Test Suite Runner", ParallelTestSuiteRunnerConfiguration.class, SuiteRunnerConfiguration.TYPE);
 			}
 		}
 	}
