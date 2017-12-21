@@ -1,14 +1,17 @@
 package com.webperformance.muse.parallel;
 
 import org.musetest.core.*;
+import org.musetest.core.resource.generic.*;
 import org.musetest.core.resource.types.*;
 import org.musetest.core.suite.*;
 import org.musetest.core.values.*;
+import org.musetest.core.values.descriptor.*;
 
 /**
  * @author Christopher L Merrill (see LICENSE.txt for license details)
  */
 @MuseTypeId("parallel-test-suite-runner")
+@MuseSubsourceDescriptor(displayName = "Concurrency", description = "The number of tests to run concurrently", type = SubsourceDescriptor.Type.Named, name = ParallelTestSuiteRunnerConfiguration.MAX_CONCURRENCY_PARAM_NAME)
 public class ParallelTestSuiteRunnerConfiguration extends SuiteRunnerConfiguration
 	{
 	@Override
@@ -41,8 +44,24 @@ public class ParallelTestSuiteRunnerConfiguration extends SuiteRunnerConfigurati
 		{
 		public ParallelTestSuiteRunnerResourceType()
 			{
-			super(TYPE_ID, "Parallel Test Suite Runner", ParallelTestSuiteRunnerConfiguration.class, SuiteRunnerConfiguration.TYPE);
+			super(TYPE_ID, "Parallel Runner", ParallelTestSuiteRunnerConfiguration.class, SuiteRunnerConfiguration.TYPE);
 			}
+
+		@Override
+		public MuseResource create()
+			{
+			final ParallelTestSuiteRunnerConfiguration config = new ParallelTestSuiteRunnerConfiguration();
+			config.parameters().addSource(MAX_CONCURRENCY_PARAM_NAME, ValueSourceConfiguration.forValue(3));
+			return config;
+			}
+
+		@Override
+		public ResourceDescriptor getDescriptor()
+			{
+			return _descriptor;
+			}
+
+		ResourceDescriptor _descriptor = new DefaultResourceDescriptor(this, "Runs multiple tests at the same time");
 		}
 	}
 
