@@ -1,9 +1,9 @@
 package com.webperformance.muse.parallel;
 
 import org.musetest.core.*;
-import org.musetest.core.context.*;
 import org.musetest.core.execution.*;
 import org.musetest.core.suite.*;
+import org.musetest.core.test.plugins.*;
 import org.slf4j.*;
 
 import java.util.concurrent.*;
@@ -16,12 +16,10 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 	@Override
 	public MuseTestSuiteResult execute(MuseProject project, MuseTestSuite suite)
 		{
-		_suite = suite;
 		_result = new BaseMuseTestSuiteResult(suite);
 
 		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchornized block)
-		for (TestConfiguration configuration : _suite.generateTestList(project))
-			_queue.add(configuration);
+		_queue.addAll(suite.generateTestList(project));
 
 		// TODO start up to _max_concurrency, listen for completion, start more...etc
 
@@ -34,10 +32,10 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 				// while there are more tests to start and there is room to run them (without exceeding max_concurrency)
 				while (!_queue.isEmpty() && _running < _max_concurrency)
 					{
-					TestConfiguration next = _queue.poll();
-					TestRunner runner = new NotifyingTestRunner(project, next.getTest());
-					for (ContextInitializer initializer : next.getInitializers())
-						runner.getExecutionContext().addInitializer(initializer);
+					TestConfiguration configuration = _queue.poll();
+					TestRunner runner = new NotifyingTestRunner(project, configuration.getTest());
+					for (TestPlugin plugin : configuration.getPlugins())
+						runner.getExecutionContext().addTestPlugin(plugin);
 					runner.runTest();
 					_running++;
 					_started++;
@@ -75,7 +73,6 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		_max_concurrency = max_concurrency;
 		}
 
-	private MuseTestSuite _suite;
 	private BaseMuseTestSuiteResult _result;
 	private long _max_concurrency = DEFAULT_MAX_CONCURRENCY;
 	private int _running = 0;
