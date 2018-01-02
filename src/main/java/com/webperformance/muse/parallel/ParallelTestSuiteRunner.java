@@ -18,7 +18,7 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		{
 		_result = new BaseMuseTestSuiteResult(suite);
 
-		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchornized block)
+		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchronized block)
 		Iterator<TestConfiguration> tests = suite.getTests(project);
 
 		// TODO start up to _max_concurrency, listen for completion, start more...etc
