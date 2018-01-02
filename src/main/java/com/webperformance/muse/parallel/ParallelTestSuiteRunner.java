@@ -6,7 +6,7 @@ import org.musetest.core.suite.*;
 import org.musetest.core.test.plugins.*;
 import org.slf4j.*;
 
-import java.util.concurrent.*;
+import java.util.*;
 
 /**
  * @author Christopher L Merrill (see LICENSE.txt for license details)
@@ -19,7 +19,7 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		_result = new BaseMuseTestSuiteResult(suite);
 
 		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchornized block)
-		_queue.addAll(suite.generateTestList(project));
+		Iterator<TestConfiguration> tests = suite.getTests(project);
 
 		// TODO start up to _max_concurrency, listen for completion, start more...etc
 
@@ -27,12 +27,12 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		synchronized (this)
 			{
 			// while tests are not all started and complete
-			while (!_queue.isEmpty() || _started > _completed)
+			while (tests.hasNext() || _started > _completed)
 				{
 				// while there are more tests to start and there is room to run them (without exceeding max_concurrency)
-				while (!_queue.isEmpty() && _running < _max_concurrency)
+				while (tests.hasNext() && _running < _max_concurrency)
 					{
-					TestConfiguration configuration = _queue.poll();
+					TestConfiguration configuration = tests.next();
 					TestRunner runner = new NotifyingTestRunner(project, configuration.getTest());
 					for (TestPlugin plugin : configuration.getPlugins())
 						runner.getExecutionContext().addTestPlugin(plugin);
@@ -78,7 +78,6 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 	private int _running = 0;
 	private int _completed = 0;
 	private int _started = 0;
-	private ConcurrentLinkedQueue<TestConfiguration> _queue = new ConcurrentLinkedQueue();
 
 	public final static Long DEFAULT_MAX_CONCURRENCY = 10L;
 
