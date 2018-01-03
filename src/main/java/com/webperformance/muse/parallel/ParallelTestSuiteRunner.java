@@ -2,8 +2,10 @@ package com.webperformance.muse.parallel;
 
 import org.musetest.core.*;
 import org.musetest.core.execution.*;
+import org.musetest.core.resultstorage.*;
 import org.musetest.core.suite.*;
 import org.musetest.core.test.plugins.*;
+import org.musetest.core.variables.*;
 import org.slf4j.*;
 
 import java.util.*;
@@ -21,8 +23,6 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchronized block)
 		Iterator<TestConfiguration> tests = suite.getTests(project);
 
-		// TODO start up to _max_concurrency, listen for completion, start more...etc
-
 		// wait for them to finish
 		synchronized (this)
 			{
@@ -36,6 +36,8 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 					TestRunner runner = new NotifyingTestRunner(project, configuration.getTest());
 					for (TestPlugin plugin : configuration.getPlugins())
 						runner.getExecutionContext().addTestPlugin(plugin);
+					if (_output != null)
+				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), VariableScope.Execution);
 					runner.runTest();
 					_running++;
 					_started++;
@@ -53,6 +55,12 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 				}
 			return _result;
 			}
+		}
+
+	@Override
+	public void setOutputPath(String path)
+		{
+		_output = new TestSuiteOutputOnDisk(path);
 		}
 
 	private synchronized void notifyComplete(MuseTestResult result)
@@ -74,6 +82,7 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		}
 
 	private BaseMuseTestSuiteResult _result;
+	private TestSuiteOutputOnDisk _output = null;
 	private long _max_concurrency = DEFAULT_MAX_CONCURRENCY;
 	private int _running = 0;
 	private int _completed = 0;
