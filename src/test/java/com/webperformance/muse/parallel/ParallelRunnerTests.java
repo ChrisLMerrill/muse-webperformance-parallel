@@ -8,6 +8,7 @@ import org.musetest.core.project.*;
 import org.musetest.core.suite.*;
 import org.musetest.core.values.*;
 
+import java.io.*;
 import java.text.*;
 
 /**
@@ -19,7 +20,6 @@ public class ParallelRunnerTests
 	public void runInParallel()
 		{
 		ParallelTestSuiteRunner runner = new ParallelTestSuiteRunner();
-		runner.execute(_project, _suite);
 		long duration = run(runner);
 
 		// verify they all ran in roughly the test duration (e.g. all in parallel)
@@ -64,6 +64,11 @@ public class ParallelRunnerTests
 
 	class SlowMockTest extends MockTest
 		{
+		public SlowMockTest(String id)
+			{
+			super(id);
+			}
+
 		@Override
 		protected MuseTestResult executeImplementation(TestExecutionContext context)
 			{
@@ -78,15 +83,24 @@ public class ParallelRunnerTests
 		}
 
 	@Before
-	public void setup()
+	public void setup() throws IOException
 		{
 		_project = new SimpleProject();
-
 		_suite = new SimpleTestSuite();
-		_suite.add(new SlowMockTest());
-		_suite.add(new SlowMockTest());
-		_suite.add(new SlowMockTest());
-		_suite.add(new SlowMockTest());
+		_suite.setId("suite1");
+		_project.getResourceStorage().addResource(_suite);
+
+		setupTest("mock1");
+		setupTest("mock2");
+		setupTest("mock3");
+		setupTest("mock4");
+		}
+
+	private void setupTest(String name) throws IOException
+		{
+		final SlowMockTest test = new SlowMockTest(name);
+		_suite.add(test);
+		_project.getResourceStorage().addResource(test);
 		}
 
 	private SimpleProject _project;

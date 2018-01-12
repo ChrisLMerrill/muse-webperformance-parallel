@@ -4,7 +4,7 @@ import org.musetest.core.*;
 import org.musetest.core.execution.*;
 import org.musetest.core.resultstorage.*;
 import org.musetest.core.suite.*;
-import org.musetest.core.test.plugins.*;
+import org.musetest.core.test.*;
 import org.musetest.core.variables.*;
 import org.slf4j.*;
 
@@ -33,9 +33,7 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 				while (tests.hasNext() && _running < _max_concurrency)
 					{
 					TestConfiguration configuration = tests.next();
-					TestRunner runner = new NotifyingTestRunner(project, configuration.getTest());
-					for (TestPlugin plugin : configuration.getPlugins())
-						runner.getExecutionContext().addTestPlugin(plugin);
+					TestRunner runner = new NotifyingTestRunner(project, configuration);
 					if (_output != null)
 				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), VariableScope.Execution);
 					runner.runTest();
@@ -92,7 +90,7 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 
 	class NotifyingTestRunner extends ThreadedTestRunner
 		{
-		NotifyingTestRunner(MuseProject project, MuseTest test)
+		NotifyingTestRunner(MuseProject project, TestConfiguration test)
 			{
 			super(project, test);
 			}
