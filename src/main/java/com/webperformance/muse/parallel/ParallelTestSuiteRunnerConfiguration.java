@@ -44,7 +44,7 @@ public class ParallelTestSuiteRunnerConfiguration extends SuiteRunnerConfigurati
 		{
 		public ParallelTestSuiteRunnerResourceType()
 			{
-			super(TYPE_ID, "Parallel Runner", ParallelTestSuiteRunnerConfiguration.class, SuiteRunnerConfiguration.TYPE);
+			super(TYPE_ID, "Parallel Test Suite Runner", ParallelTestSuiteRunnerConfiguration.class, SuiteRunnerConfiguration.TYPE);
 			}
 
 		@Override
@@ -61,7 +61,7 @@ public class ParallelTestSuiteRunnerConfiguration extends SuiteRunnerConfigurati
 			return _descriptor;
 			}
 
-		ResourceDescriptor _descriptor = new DefaultResourceDescriptor(this, "Runs multiple tests at the same time");
+		ResourceDescriptor _descriptor = new DefaultResourceDescriptor(this, "Run multiple tests simultaneously");
 		}
 	}
 
