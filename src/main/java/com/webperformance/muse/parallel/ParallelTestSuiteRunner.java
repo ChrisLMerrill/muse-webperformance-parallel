@@ -4,6 +4,7 @@ import org.musetest.core.*;
 import org.musetest.core.execution.*;
 import org.musetest.core.resultstorage.*;
 import org.musetest.core.suite.*;
+import org.musetest.core.suite.plugin.*;
 import org.musetest.core.test.*;
 import org.musetest.core.variables.*;
 import org.slf4j.*;
@@ -13,12 +14,14 @@ import java.util.*;
 /**
  * @author Christopher L Merrill (see LICENSE.txt for license details)
  */
-public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
+public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 	{
 	@Override
-	public MuseTestSuiteResult execute(MuseProject project, MuseTestSuite suite)
+	public boolean execute(MuseProject project, MuseTestSuite suite, List<TestSuitePlugin> plugins)
 		{
-		_result = new BaseMuseTestSuiteResult(suite);
+		_project = project;
+		final List<TestSuitePlugin> suite_plugins = setupPlugins(suite, plugins);
+		boolean success;
 
 		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchronized block)
 		Iterator<TestConfiguration> tests = suite.getTests(project);
@@ -33,6 +36,10 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 				while (tests.hasNext() && _running < _max_concurrency)
 					{
 					TestConfiguration configuration = tests.next();
+					configuration.withinProject(project);
+					for (TestSuitePlugin plugin : suite_plugins)
+	                    configuration.addPlugin(plugin);
+
 					TestRunner runner = new NotifyingTestRunner(project, configuration);
 					if (_output != null)
 				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), VariableScope.Execution);
@@ -48,24 +55,21 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 				catch (InterruptedException e)
 					{
 					LOG.error("test suite was interrupted");
-					return _result;
 					}
 				}
-			return _result;
+			success = _completed == _started && !tests.hasNext();  // true if we finished all the tests
 			}
+
+		if (!savePluginData(suite_plugins))
+	  	    success = false;
+
+		return success;
 		}
 
-	@Override
-	public void setOutputPath(String path)
-		{
-		_output = new TestSuiteOutputOnDisk(path);
-		}
-
-	private synchronized void notifyComplete(MuseTestResult result)
+	private synchronized void notifyComplete()
 		{
 		_running--;
 		_completed++;
-		_result.addTestResult(result);
 		notify();
 		}
 
@@ -79,8 +83,6 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		_max_concurrency = max_concurrency;
 		}
 
-	private BaseMuseTestSuiteResult _result;
-	private TestSuiteOutputOnDisk _output = null;
 	private long _max_concurrency = DEFAULT_MAX_CONCURRENCY;
 	private int _running = 0;
 	private int _completed = 0;
@@ -99,7 +101,7 @@ public class ParallelTestSuiteRunner implements MuseTestSuiteRunner
 		public void run()
 			{
 			super.run();
-			notifyComplete(getResult());
+			notifyComplete();
 			}
 		}
 
