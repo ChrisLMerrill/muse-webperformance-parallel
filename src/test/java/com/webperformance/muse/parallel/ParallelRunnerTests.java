@@ -9,7 +9,7 @@ import org.musetest.core.suite.*;
 import org.musetest.core.values.*;
 
 import java.io.*;
-import java.text.*;
+import java.util.*;
 
 /**
  * @author Christopher L Merrill (see LICENSE.txt for license details)
@@ -23,7 +23,8 @@ public class ParallelRunnerTests
 		long duration = run(runner);
 
 		// verify they all ran in roughly the test duration (e.g. all in parallel)
-		Assert.assertTrue(80 < duration && duration < 120);
+System.out.println("duration = " + duration);
+		Assert.assertTrue(90 < duration && duration < 130);
 		}
 
 	@Test
@@ -43,7 +44,7 @@ public class ParallelRunnerTests
 	private long run(ParallelTestSuiteRunner runner)
 		{
 		long start_time = System.currentTimeMillis();
-		runner.execute(_project, _suite);
+		runner.execute(_project, _suite, Collections.emptyList());
 		return System.currentTimeMillis() - start_time;
 		}
 
@@ -60,17 +61,15 @@ public class ParallelRunnerTests
 		Assert.assertEquals(3, runner.getMaxConcurrency());
 		}
 
-	static SimpleDateFormat formatter = new SimpleDateFormat("mm:ss:SSS");
-
 	class SlowMockTest extends MockTest
 		{
-		public SlowMockTest(String id)
+		SlowMockTest(String id)
 			{
 			super(id);
 			}
 
 		@Override
-		protected MuseTestResult executeImplementation(TestExecutionContext context)
+		protected boolean executeImplementation(TestExecutionContext context)
 			{
 			try
 				{
