@@ -2,9 +2,9 @@ package com.webperformance.muse.parallel;
 
 import org.musetest.core.*;
 import org.musetest.core.execution.*;
+import org.musetest.core.plugins.*;
 import org.musetest.core.resultstorage.*;
 import org.musetest.core.suite.*;
-import org.musetest.core.suite.plugin.*;
 import org.musetest.core.test.*;
 import org.musetest.core.variables.*;
 import org.slf4j.*;
@@ -17,14 +17,11 @@ import java.util.*;
 public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 	{
 	@Override
-	public boolean execute(MuseProject project, MuseTestSuite suite, List<TestSuitePlugin> plugins)
+	protected boolean runTests(MuseTestSuite suite, List<MusePlugin> manual_plugins, List<MusePlugin> auto_plugins)
 		{
-		_project = project;
-		final List<TestSuitePlugin> suite_plugins = setupPlugins(suite, plugins);
 		boolean success;
-
 		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchronized block)
-		Iterator<TestConfiguration> tests = suite.getTests(project);
+		Iterator<TestConfiguration> tests = suite.getTests(_project);
 
 		// wait for them to finish
 		synchronized (this)
@@ -36,11 +33,11 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 				while (tests.hasNext() && _running < _max_concurrency)
 					{
 					TestConfiguration configuration = tests.next();
-					configuration.withinProject(project);
-					for (TestSuitePlugin plugin : suite_plugins)
-	                    configuration.addPlugin(plugin);
+					configuration.withinProject(_project);
+					MuseExecutionContext test_context = configuration.context();
+					setupTestPlugins(manual_plugins, auto_plugins, test_context);
 
-					TestRunner runner = new NotifyingTestRunner(project, configuration);
+					TestRunner runner = new NotifyingTestRunner(_project, configuration);
 					if (_output != null)
 				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), VariableScope.Execution);
 					runner.runTest();
@@ -59,9 +56,6 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 				}
 			success = _completed == _started && !tests.hasNext();  // true if we finished all the tests
 			}
-
-		if (!savePluginData(suite_plugins))
-	  	    success = false;
 
 		return success;
 		}
