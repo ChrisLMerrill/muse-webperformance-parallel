@@ -32,7 +32,7 @@ System.out.println("duration = " + duration);
 		{
 		ParallelTestSuiteRunnerConfiguration config = new ParallelTestSuiteRunnerConfiguration();
 		config.parameters().addSource(ParallelTestSuiteRunnerConfiguration.MAX_CONCURRENCY_PARAM_NAME, ValueSourceConfiguration.forValue(1));
-		ParallelTestSuiteRunner runner = config.createRunner(new BaseExecutionContext(_project));
+		ParallelTestSuiteRunner runner = config.createRunner(new ProjectExecutionContext(_project));
 		long start_time = System.currentTimeMillis();
 		run(runner);
 		long duration = System.currentTimeMillis() - start_time;
@@ -52,7 +52,7 @@ System.out.println("duration = " + duration);
 	public void setConcurrencyFromConfig() throws MuseExecutionError
 		{
 		ParallelTestSuiteRunnerConfiguration config = new ParallelTestSuiteRunnerConfiguration();
-		MuseExecutionContext context = new BaseExecutionContext(new SimpleProject());
+		MuseExecutionContext context = new ProjectExecutionContext(new SimpleProject());
 		ParallelTestSuiteRunner runner = config.createRunner(context);
 		Assert.assertEquals(ParallelTestSuiteRunner.DEFAULT_MAX_CONCURRENCY.longValue(), runner.getMaxConcurrency());
 

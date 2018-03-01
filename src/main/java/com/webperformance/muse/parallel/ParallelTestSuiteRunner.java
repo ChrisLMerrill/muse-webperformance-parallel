@@ -1,12 +1,12 @@
 package com.webperformance.muse.parallel;
 
 import org.musetest.core.*;
+import org.musetest.core.context.*;
 import org.musetest.core.execution.*;
 import org.musetest.core.plugins.*;
 import org.musetest.core.resultstorage.*;
 import org.musetest.core.suite.*;
 import org.musetest.core.test.*;
-import org.musetest.core.variables.*;
 import org.slf4j.*;
 
 import java.util.*;
@@ -39,7 +39,7 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 
 					TestRunner runner = new NotifyingTestRunner(_project, configuration);
 					if (_output != null)
-				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), VariableScope.Execution);
+				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), ContextVariableScope.Execution);
 					runner.runTest();
 					_running++;
 					_started++;
