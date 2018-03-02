@@ -17,7 +17,7 @@ import java.util.*;
 public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 	{
 	@Override
-	protected boolean runTests(MuseTestSuite suite, List<MusePlugin> manual_plugins, List<MusePlugin> auto_plugins)
+	protected boolean runTests(MuseTestSuite suite)
 		{
 		boolean success;
 		// Put all the tests in a queue (ConcurrentQueue is overkill, since in a synchronized block)
@@ -33,11 +33,10 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 				while (tests.hasNext() && _running < _max_concurrency)
 					{
 					TestConfiguration configuration = tests.next();
-					configuration.withinProject(_project);
-					MuseExecutionContext test_context = configuration.context();
-					setupTestPlugins(manual_plugins, auto_plugins, test_context);
+					for (MusePlugin plugin : _context.getPlugins())
+		                configuration.addPlugin(plugin);
 
-					TestRunner runner = new NotifyingTestRunner(_project, configuration);
+					TestRunner runner = new NotifyingTestRunner(_context, configuration);
 					if (_output != null)
 				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), ContextVariableScope.Execution);
 					runner.runTest();
@@ -86,17 +85,22 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 
 	class NotifyingTestRunner extends ThreadedTestRunner
 		{
-		NotifyingTestRunner(MuseProject project, TestConfiguration test)
+		NotifyingTestRunner(MuseExecutionContext context, TestConfiguration test)
 			{
-			super(project, test);
+			super(context, test);
+			_test = test;
 			}
 
 		@Override
 		public void run()
 			{
+			final MuseEvent event = raiseTestStartEvent(_test);
 			super.run();
 			notifyComplete();
+			raiseTestEndEvent(event);
 			}
+
+		private final TestConfiguration _test;
 		}
 
 	private final static Logger LOG = LoggerFactory.getLogger(ParallelTestSuiteRunner.class);
