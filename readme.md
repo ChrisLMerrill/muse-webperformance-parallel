@@ -2,7 +2,7 @@ Extends the [Muse Test Framework](https://github.com/ChrisLMerrill/muse) with a 
 
 # Installation
 
-The plugin is distributed with the rest of the [MuseIDE](http://ide4selenium.com) plugins - press the Extensions button in MuseIDE to add it to your project.  
+The extension is distributed with the rest of the [MuseIDE](http://ide4selenium.com) extensions - press the Extensions button in MuseIDE to add it to your project.  
 
 # Configuration and Usage
 
