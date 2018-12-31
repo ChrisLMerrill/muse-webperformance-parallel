@@ -39,3 +39,7 @@ jar {
         attributes 'muse-package': 'com.webperformance.muse.parallel'
     }
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.9'
+}
