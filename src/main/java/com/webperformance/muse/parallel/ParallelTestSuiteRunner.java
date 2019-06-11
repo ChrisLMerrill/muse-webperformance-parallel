@@ -1,10 +1,7 @@
 package com.webperformance.muse.parallel;
 
 import org.musetest.core.*;
-import org.musetest.core.context.*;
 import org.musetest.core.execution.*;
-import org.musetest.core.plugins.*;
-import org.musetest.core.resultstorage.*;
 import org.musetest.core.suite.*;
 import org.musetest.core.test.*;
 import org.slf4j.*;
@@ -33,12 +30,7 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 				while (tests.hasNext() && _running < _max_concurrency)
 					{
 					TestConfiguration configuration = tests.next();
-					for (MusePlugin plugin : _context.getPlugins())
-		                configuration.addPlugin(plugin);
-
 					TestRunner runner = new NotifyingTestRunner(_context, configuration);
-					if (_output != null)
-				        runner.getExecutionContext().setVariable(SaveTestResultsToDisk.OUTPUT_FOLDER_VARIABLE_NAME, _output.getOutputFolderName(configuration), ContextVariableScope.Execution);
 					runner.runTest();
 					_running++;
 					_started++;
@@ -59,7 +51,7 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 		return success;
 		}
 
-	private synchronized void notifyComplete()
+    private synchronized void notifyComplete()
 		{
 		_running--;
 		_completed++;
@@ -96,8 +88,8 @@ public class ParallelTestSuiteRunner extends SimpleTestSuiteRunner
 			{
 			final MuseEvent event = raiseTestStartEvent(_test);
 			super.run();
+            raiseTestEndEvent(event);
 			notifyComplete();
-			raiseTestEndEvent(event);
 			}
 
 		private final TestConfiguration _test;

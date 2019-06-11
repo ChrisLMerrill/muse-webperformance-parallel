@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'maven'
 
-version = 0.2
+version = 0.3
 group = 'com.webperformance.muse'
 
 repositories {
@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.musetest:muse-core:0.12'
+    compile 'org.musetest:muse-core:0.15'
 
     testImplementation 'junit:junit:4.12'
 }
